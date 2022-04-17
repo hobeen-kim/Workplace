@@ -13,7 +13,7 @@
 # [개인 추가사항]
 # 똥 여러개 생성
 
-from random import randint, random
+from random import randint
 import pygame
 import enemys
 
@@ -53,7 +53,7 @@ character_speed = 0.6
 enemy_speed = 0.6
 
 #적 enemy 캐릭터
-num_enemies = randint(3, 7)
+num_enemies = 7
 enemies = []
 enemy = pygame.image.load("C:\\Users\\USER\\Desktop\\workplace\\TIL\\22.04\\mine_sweeper\\pygame_basic\\enemy.png")
 for _ in range(num_enemies):
@@ -133,7 +133,7 @@ while running:
 
         # enemy 위치 계속 생성
         if enemies[i].enemy_y_pos >= screen_height:
-            enemies[i].enemy_y_pos = -enemies[0].enemy_height
+            enemies[i].enemy_y_pos = randint(-screen_height, 0)
             enemies[i].enemy_x_pos = randint(0, screen_width - enemies[0].enemy_width)
         
         enemy_rect = enemies[i].enemy.get_rect()

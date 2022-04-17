@@ -1,16 +1,3 @@
-import enemys
+number_list = [i for i in range(1,50)]
 
-lsts = []
-for _ in range(4):
-    lst = enemys.Enemy(
-        1,
-        2,
-        3,
-        4, 
-        5, 
-        6
-        )
-    lsts.append(lst)
-
-lsts[0].enemy_x_pos += 1
-print(lsts[0].enemy_x_pos)
+print(number_list)
