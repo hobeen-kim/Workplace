@@ -42,9 +42,9 @@ numbers = [
 status = [mine_land, number, boom, flag]
 
 # 지뢰 개수와 위치 지정
-table_size = 5
+table_size = 15
 total_number = table_size ** 2
-total_mine_number = 1
+total_mine_number = 40
 
 number_list = [i for i in range(1,total_number)]
 
