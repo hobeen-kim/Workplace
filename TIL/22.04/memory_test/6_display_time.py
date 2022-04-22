@@ -3,6 +3,12 @@ import pygame
 
 # 레벨에 맞게 설정
 def setup(level):
+    ## 얼마동안 숫자를 보여줄지? (시간)
+    global display_time
+
+    display_time = 5 - (level // 3)
+    display_time = max(display_time, 1) # 1초 미만이면 1초로 설정
+
     ## 얼마나 많은 숫자를 보여줄 것인가?
     number_count = (level // 3) + 5 # 3의 배수마다 1씩 추가
     number_count = min(number_count, 20) # 만약 20을 초과하면 그냥 20으로 처리
@@ -50,28 +56,36 @@ def display_start_screen():
     pygame.draw.circle(screen, WHITE, start_button.center, 60, 5) #(그릴 위치, 색, 중심점, 반지름, 두께)
 
 # 게임화면 보여주기
-def dispaly_game_screen():
+def display_game_screen():
+    global hidden
 
-        ## 실제 숫자 텍스트 그리기
+    if not hidden:
+        elapsed_time = ( pygame.time.get_ticks() - start_ticks ) / 1000 # ms -> sec
+        if elapsed_time > display_time:
+            hidden = True
+
+    ## 실제텍스트 그리기
     for idx, rect in enumerate(number_buttons, start=1): #start 1은 idx를 1부터 시작하겠다는 말
-        cell_text = game_font.render(str(idx), True, WHITE)
-        text_rect = cell_text.get_rect(center = rect.center) #text의 rect.center를 정의
-        screen.blit(cell_text, text_rect) #text 그리기
-        if hide:
+
+        ### 버튼 사각형 그리기 (숨김 처리)
+        if hidden:
             pygame.draw.rect(screen, WHITE, rect)
-
-
-
+        ### 실제 숫자 텍스트
+        else:
+            cell_text = game_font.render(str(idx), True, WHITE)
+            text_rect = cell_text.get_rect(center = rect.center) #text의 rect.center를 정의
+            screen.blit(cell_text, text_rect) #text 그리기
 
 # pos 에 해당하는 버튼 확인
 def check_buttons(pos):
-    global start
+    global start, start_ticks
 
     if start:
         check_number_buttons(pos)
 
     elif start_button.collidepoint(pos):
         start = True
+        start_ticks = pygame.time.get_ticks() # 타이머 시작 (현재 시간을 저장)
 
 def check_number_buttons(pos):
     global hidden
@@ -114,6 +128,10 @@ GRAY = (50, 50, 50)
 # 플레이어가 눌러야 하는 버튼들
 number_buttons = []
 
+# 시간 정의
+display_time = None # 보여지는 시간
+start_ticks = None # 시간 계산 (현재 시간 정보를 저장)
+
 # 게임 시작 여부 
 start = False
 
@@ -144,7 +162,7 @@ while running:
 
     if start:
     # start이면 게임 화면 표시
-        dispaly_game_screen()
+        display_game_screen()
     else:
     # 시작 화면 표시
         display_start_screen()

@@ -15,6 +15,12 @@ def shuffle_grid(number_count):
     rows = 5
     columns = 9
 
+    ## 셀, 버튼, 마진 등 크기
+    cell_size = 130 # 각 셀 별 가로, 세로 크기
+    button_size = 110 
+    screen_left_margin = 55
+    screen_top_margin = 20
+
     ## 5 X 9 채우기
     grid = [[0 for col in range(columns)] for row in range(rows)]
 
@@ -22,13 +28,21 @@ def shuffle_grid(number_count):
     number = 1 #시작 숫자를 1부터 number_count 까지 넣기 위해 변수 설정
     while number <= number_count:
         row_idx = randrange(0, rows)
-        column_idx = randrange(0, columns)
+        col_idx = randrange(0, columns)
 
-        if grid[row_idx][column_idx] == 0:
-            grid[row_idx][column_idx] = number
+        if grid[row_idx][col_idx] == 0:
+            grid[row_idx][col_idx] = number
             number += 1
 
-    print(grid)
+            ### 현재 grid cell 위치 기준으로 x, y 위치를 구함
+            center_x = screen_left_margin + (col_idx * cell_size) + (cell_size / 2)
+            center_y = screen_top_margin + (row_idx * cell_size) + (cell_size / 2)
+
+            ### 버튼 그리기
+            button = pygame.Rect(0, 0, button_size, button_size)
+            button.center = (center_x, center_y)
+
+            number_buttons.append(button)
 
 
 # 시작화면 보여주기
@@ -37,7 +51,13 @@ def display_start_screen():
 
 # 게임화면 보여주기
 def dispaly_game_screen():
-    print("Game Start")
+    for idx, rect in enumerate(number_buttons, start=1): #start 1은 idx를 1부터 시작하겠다는 말
+        pygame.draw.rect(screen, GRAY, rect)
+
+        ## 실제 숫자 텍스트 그리기
+        cell_text = game_font.render(str(idx), True, WHITE)
+        text_rect = cell_text.get_rect(center = rect.center) #text의 rect.center를 정의
+        screen.blit(cell_text, text_rect) #text 그리기
 
 # pos 에 해당하는 버튼 확인
 def check_buttons(pos):
@@ -56,6 +76,9 @@ screen = pygame.display.set_mode((screen_width, screen_height))
 # 화면 타이틀 설정
 pygame.display.set_caption("MEMORY TEST")
 
+# 폰트 설정
+game_font = pygame.font.Font(None, 120)
+
 # 시작버튼
 start_button = pygame.Rect(0, 0, 120, 120)
 start_button.center = (120, screen_height - 120) # 좌하에서 120, 120 떨어져있음
@@ -63,6 +86,10 @@ start_button.center = (120, screen_height - 120) # 좌하에서 120, 120 떨어�
 # 색깔
 BLACK = (0, 0, 0) #RGB 값
 WHITE = (255, 255, 255)
+GRAY = (50, 50, 50)
+
+# 플레이어가 눌러야 하는 버튼들
+number_buttons = []
 
 # 게임 시작 여부 판단
 start = False
@@ -83,7 +110,14 @@ while running:
         # 마우스 클릭 시
         elif event.type == pygame.MOUSEBUTTONUP:
             click_pos = pygame.mouse.get_pos()
-            print(click_pos)
+            for idx, button in enumerate(number_buttons, start=1):
+                if button.collidepoint(click_pos):
+                    if idx == 1:
+                        print("버튼을 눌렀습니다.")
+                        del number_buttons[0]
+                    else:
+                        print("졌습니다.")
+
     
 
     # 화면 전체를 까맣게 칠함

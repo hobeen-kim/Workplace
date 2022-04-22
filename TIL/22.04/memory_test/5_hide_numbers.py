@@ -52,13 +52,18 @@ def display_start_screen():
 # 게임화면 보여주기
 def dispaly_game_screen():
 
-        ## 실제 숫자 텍스트 그리기
+        ## 실제텍스트 그리기
     for idx, rect in enumerate(number_buttons, start=1): #start 1은 idx를 1부터 시작하겠다는 말
-        cell_text = game_font.render(str(idx), True, WHITE)
-        text_rect = cell_text.get_rect(center = rect.center) #text의 rect.center를 정의
-        screen.blit(cell_text, text_rect) #text 그리기
-        if hide:
+
+        ### 버튼 사각형 그리기 (숨김 처리)
+        if hidden:
             pygame.draw.rect(screen, WHITE, rect)
+        ### 실제 숫자 텍스트
+        else:
+            cell_text = game_font.render(str(idx), True, WHITE)
+            text_rect = cell_text.get_rect(center = rect.center) #text의 rect.center를 정의
+            screen.blit(cell_text, text_rect) #text 그리기
+        
 
 
 
