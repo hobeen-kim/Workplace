@@ -185,6 +185,7 @@ while running:
             for location in locations:
                 try:
                     mines[mine_idx + location]["reveal"] = 1
+                    print(mine_idx + location)
                 except:
                     continue
 
