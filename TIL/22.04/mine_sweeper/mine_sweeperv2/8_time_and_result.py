@@ -3,9 +3,9 @@ import pygame
 ##남은 과제
 # nearby class 만들기
 # 마우스 누르고 대기할 때 상태 출력
-# 종료 조건 설정
 # 시간 출력
 # level 선택
+# 누르면 시작(미리 지뢰 그리기 x)
 
 # 게임 시작
 def display_start_game():
@@ -34,7 +34,6 @@ def display_start_game():
                 cell_text = game_font_cell.render("M", True, GRAY)
                 text_rect = cell_text.get_rect(center = rect.center)
                 screen.blit(cell_text, text_rect)
-
             ### 지뢰가 아닐 때
             else:
                 cell_text = game_font_cell.render(str(8-cell["nearby"]), True, GRAY)
@@ -48,14 +47,18 @@ def display_waiting_game():
 
 # 왼쪽 버튼 체크
 def check_left_buttons(pos):
-    global start
+    global start, running, start_ticks
     if start:
         for cell in cells:
             if cell["rect"].collidepoint(pos):
                 cell["reveal"] = 1
+                if cell["status"] == 1:
+                    running = False
     
     elif start_button.collidepoint(pos):
         start = True
+        ## 스타트 시간을 초기화하기 위해
+        start_ticks = pygame.time.get_ticks()
 
 # 오른쪽 버튼 체크
 def check_right_buttons(pos):
@@ -84,6 +87,7 @@ def check_double_bottons(pos):
                         cnt += 1
             ## 깃발 개수와 mine 개수가 같을 때
             if cnt > 0 and cnt == cell["nearby"]:
+                global running
                 for nearby in nearby_range:
                     dx = nearby[0]
                     dy = nearby[1]
@@ -93,21 +97,31 @@ def check_double_bottons(pos):
                         ### 깃발이 꽂힌 곳인 mine이 아니면 실패
                         if nearby_cell["reveal"] == 0 and nearby_cell["status"] == 0 and nearby_cell["right_button"] == 1:
                             print('lose')
+                            running = False
                         else:
                             nearby_cell["reveal"] = 1
                 cnt = 0
 
-        #     for nearby in nearby_range:
-        #         dx = nearby[0]
-        #         dy = nearby[1]
-        #         if -1 < cell["x_pos"] + dx < field_size and -1 < cell["y_pos"] + dy < field_size:
-        #             cells_move = dx * field_size + dy
-        #             nearby_cell = cells[idx + cells_move]
-        #             if nearby_cell["reveal"] == 0 and nearby_cell["status"] == 0 and nearby_cell["right_button"] == 1:
-        #                 print("lose")
-        #             else:
-        #                 nearby_cell["reveal"] = 1
-                        
+# 승리 조건 확인
+def check_mine_cnt():
+    cnt = 0
+    ## 그렇지 않으면 reveal된 mine 확인
+    for location in mine_locations:
+        if cells[location]["reveal"] == 1:
+            cnt += 1
+    ## cnt가 mine_number와 같다면 true 리턴
+    if cnt == mine_number:
+        return True
+
+    return False
+
+# 시간 흐르기
+def start_time():
+    elapsed_time = (pygame.time.get_ticks() - start_ticks) / 1000
+    timer = game_font.render("Time : {}".format(int(elapsed_time)), True, WHITE)
+    screen.blit(timer, (10, 10))
+
+
 pygame.init() 
 
 screen_width = 640
@@ -118,7 +132,7 @@ screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("MINE SWEEPER_v2")
 
 # 지뢰개수, 필드 사이즈, screen 여백
-mine_number = 30
+mine_number = 5
 field_size = 20
 cell_size = (500 - ((field_size -1) * 2)) / field_size 
 
@@ -171,13 +185,16 @@ WHITE = (255, 255, 255)
 GRAY = (120, 120, 120)
 BLACK = (0, 0, 0)
 
-# 더블클릭을 위한 시간 설정
+# 시간설정
+## 더블클릭을 위한 시간 설정
 clock = pygame.time.Clock()
 DOUBLECLICKTIME = 100
+## 시간 경과 계산을 위한 시간 설정
+start_ticks = None
 
 # 폰트 설정
 game_font_cell = pygame.font.Font(None, int(cell_size))
-game_font = pygame.font.Font(None, 20)
+game_font = pygame.font.Font(None, 120)
 
 # 게임 종료 상태 메세지
 game_result = "Game_over"
@@ -221,7 +238,13 @@ while running:
     if double_click_pos:
         check_double_bottons(double_click_pos)
 
-    ## 아무것도 없는 셀 주변 열기
+    # 게임 승리 조건
+    if check_mine_cnt():
+        game_result = "Victory"
+        running = False
+
+
+    # 아무것도 없는 셀 주변 열기
     for idx, cell in enumerate(cells):
         if cell["reveal"] == 1 and cell["nearby"] == 0:
            for nearby in nearby_range:
@@ -232,14 +255,20 @@ while running:
                     nearby_cell = cells[idx + cells_move]
                     nearby_cell["reveal"] = 1   
 
+    # 경과시간 계산
+    if start:
+        start_time()
+        
+
     pygame.display.update()
 
+#게임 종료 메세지 출력
 msg = game_font.render(game_result, True, (255, 255, 0))
 msg_rect = msg.get_rect(center=(int(screen_width / 2), int(screen_height / 2)))
 screen.blit(msg, msg_rect)
 
 pygame.display.update()
 
-
+pygame.time.delay(2000)
 
 pygame.quit()
